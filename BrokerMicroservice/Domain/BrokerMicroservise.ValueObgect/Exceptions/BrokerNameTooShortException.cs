@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BrokerMicroservise.ValueObgect.Exceptions
+﻿namespace BrokerMicroservise.ValueObgect.Exceptions
 {
     ///<summary>
     /// Проверка длины имени брокера (слишком короткое значение).

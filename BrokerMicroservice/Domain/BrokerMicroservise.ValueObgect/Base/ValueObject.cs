@@ -1,4 +1,6 @@
-﻿namespace BrokerMicroservise.ValueObgect.Base
+﻿using BrokerMicroservise.ValueObgect.Exceptions;
+
+namespace BrokerMicroservise.ValueObgect.Base
 {
     public abstract class ValueObject<T> : IEquatable<ValueObject<T>>
     {
