@@ -1,4 +1,5 @@
 ﻿using BrokerMicroservice.Domain.Entities;
+using BrokerMicroservice.Domain.Entities.Base;
 
 namespace BrokerMicroservice.Repositories.Abstractions
 {
