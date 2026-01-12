@@ -1,7 +1,8 @@
 ﻿using BrokerMicroservice.Domain.Entities.Base;
-using BrokerMicroservice.Domain.Exceptions;
 using BrokerMicroservice.Domain.Enums;
+using BrokerMicroservice.Domain.Exceptions;
 using BrokerMicroservise.ValueObgect;
+using System.Security.Cryptography;
 
 namespace BrokerMicroservice.Domain.Entities
 {
@@ -119,6 +120,64 @@ namespace BrokerMicroservice.Domain.Entities
             return true;
         }
 
+        /// <summary>
+        /// Генерация случайной цифровой строки нужной длины.
+        /// </summary>
+        private static string GenerateDigits(int length)
+        {
+            var bytes = new byte[length];
+            RandomNumberGenerator.Fill(bytes);
+
+            var chars = new char[length];
+            for (int i = 0; i < length; i++)
+                chars[i] = (char)('0' + (bytes[i] % 10));
+
+            return new string(chars);
+        }
+
+        private Card CreateCard()
+        {
+            // Генерируем номер карты, пока не найдём уникальный среди клиентов брокера
+            while (true)
+            {
+                var numberString = GenerateDigits(16);  //16 цифр
+                var cardNumber = new CardNumber(numberString);
+
+                var exists = _client.Any(c => c.Card.CardNumber.Equals(cardNumber));
+                if (!exists)
+                    return new Card(cardNumber);
+            }
+        }
+
+        private Portfolio CreatePortfolio()
+        {
+            //Генерируем номер портфеля, пока не найдём уникальный среди клиентов брокера
+            while (true)
+            {
+                var numberString = GenerateDigits(12);   //12 цифр (пример)
+                var portfolioNumber = new PortfolioNumber(numberString);
+
+                var exists = _client.Any(c => c.Portfolio.PortfolioNumber.Equals(portfolioNumber));
+                if (!exists)
+                    return new Portfolio(portfolioNumber);
+            }
+        }
+
+        /// <summary>
+        /// Создаёт аккаунт клиента с сгенерированной уникальной картой и уникальным номером портфеля
+        /// </summary>
+        /// <param name="lastName"></param>
+        /// <param name="firstName"></param>
+        /// <param name="middleName"></param>
+        /// <param name="phoneNumber"></param>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public Client CreateClient(LastName lastName, FirstName firstName, MiddleName? middleName, PhoneNumber phoneNumber, Email email)
+        {
+            var client = new Client(firstName, lastName, middleName, email, phoneNumber, CreateCard(), CreatePortfolio());
+            AddClient(client);
+            return client;
+        }
         #endregion
     }
 }
