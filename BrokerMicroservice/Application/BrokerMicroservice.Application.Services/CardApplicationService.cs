@@ -24,26 +24,7 @@ namespace BrokerMicroservice.Application.Services
          => (await cardRepository.GetAllAsync(cancellationToken, true))
             .Select(mapper.Map<CardModel>);
 
-        // Создание здесь тарифной зоны
-        Task<CardModel?> CreateCardAsync(CreateCardModel createCardmodel, CancellationToken cancellationToken = default)
-        {
-            // Администратор, создающий модель
-            var broker = await brokerRepository.GetByIdAsync(createCardmodel.BrokerId, cancellationToken);
-            if (broker is null)
-                return null;
-
-            var CreateCard = Broker.CreateCard(
-            new(createCardmodel.TarifZoneName), // можно просто написать в коде new(..) без точного типа
-            new(createCardmodel.Price),S
-            new(createCardmodel.Distance));
-
-            if ( is null)
-                return null;
-
-            // Добавление тарифной зоны
-            var createdTariffZone = await tariffZoneRepository.AddAsync(tariffZone, cancellationToken);
-            return createdTariffZone is null ? null : mapper.Map<TariffZoneModel>(createdTariffZone);
-        }
+        
 
     }
 }

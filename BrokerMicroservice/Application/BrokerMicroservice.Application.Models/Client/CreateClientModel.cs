@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BrokerMicroservice.Application.Models.Base;
+
 
 namespace BrokerMicroservice.Application.Models.Client
 {
-    internal class CreateClientModel
-    {
-    }
+    public record class CreateClientModel(string FirstName, string LastName, string? MiddleName, string Email, string PhoneNumber) : ICreateModel; //Данные для создания пользователя.
+    //Продумать как на созданный акк добавить CardId, PortfolioId, BrokeId, transations
 }

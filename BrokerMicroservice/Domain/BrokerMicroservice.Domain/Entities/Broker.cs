@@ -79,9 +79,10 @@ namespace BrokerMicroservice.Domain.Entities
         /// <returns></returns>
         public bool AddClient(Client client)
         {
+            if (client == null) return false;
             if (_client.Contains(client)) //Проверка на то что клиент не повторяется 
                 throw new AddingAnExistingClientException(this.Name, client.Id, client.FirstName, client.LastName, client.MiddleName);
-            if (client == null) return false;
+            
             _client.Add(client);
             return true;
         }
@@ -100,9 +101,11 @@ namespace BrokerMicroservice.Domain.Entities
         /// <returns></returns>
         public bool AddAsset(Asset asset)
         {
-            if (_asset.Contains(asset) && _asset.Any(a => a.AssetType == asset.AssetType))  // Объект не найден, но тип уже есть
-                throw new AddingAnExistingAssetException(this.Name, asset.AssetType);
-            if (asset == null) return false;
+            if (asset == null) return false; 
+            // Запрещаем добавлять актив с уже существующим типом
+    if (_asset.Any(a => a.AssetType == asset.AssetType))
+        throw new AddingAnExistingAssetException(this.Name, asset.AssetType);
+        
             _asset.Add(asset);
             return true;
         }
@@ -174,7 +177,10 @@ namespace BrokerMicroservice.Domain.Entities
         /// <returns></returns>
         public Client CreateClient(LastName lastName, FirstName firstName, MiddleName? middleName, PhoneNumber phoneNumber, Email email)
         {
-            var client = new Client(firstName, lastName, middleName, email, phoneNumber, CreateCard(), CreatePortfolio());
+            var card = CreateCard();
+            var portfolio = CreatePortfolio();
+
+            var client = new Client(firstName, lastName, middleName, email, phoneNumber, card, portfolio, this);
             AddClient(client);
             return client;
         }

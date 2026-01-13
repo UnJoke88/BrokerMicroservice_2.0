@@ -34,7 +34,7 @@ namespace BrokerMicroservice.Domain.Entities
         }
 
         protected Client(Guid id, FirstName firstName, LastName lastName, MiddleName? middleName,
-                      Email email, PhoneNumber phoneNumber, Card card, Portfolio portfolio)
+                      Email email, PhoneNumber phoneNumber, Card card, Portfolio portfolio, Broker broker)
             : base(id)
         {
             FirstName = firstName ?? throw new ArgumentNullValueException(nameof(firstName));
@@ -44,11 +44,15 @@ namespace BrokerMicroservice.Domain.Entities
             PhoneNumber = phoneNumber ?? throw new ArgumentNullValueException(nameof(phoneNumber));
             Card = card ?? throw new ArgumentNullValueException(nameof(card));
             Portfolio = portfolio ?? throw new ArgumentNullValueException(nameof(portfolio));
+            Broker = broker ?? throw new ArgumentNullException(nameof(broker));
+            BrokerId = broker.Id;
+            CardId = card.Id;
+            PortfolioId = portfolio.Id;
         }
 
         public Client(FirstName firstName, LastName lastName, MiddleName? middleName,
-                      Email email, PhoneNumber phoneNumber, Card card, Portfolio portfolio)
-            : this(Guid.NewGuid(), firstName, lastName, middleName, email, phoneNumber, card, portfolio)//Guid.NewGuid() - формирует id и передаёт в Guid id(protected) далее base(id)
+                      Email email, PhoneNumber phoneNumber, Card card, Portfolio portfolio, Broker broker)
+            : this(Guid.NewGuid(), firstName, lastName, middleName, email, phoneNumber, card, portfolio, broker)//Guid.NewGuid() - формирует id и передаёт в Guid id(protected) далее base(id)
         {
 
         }

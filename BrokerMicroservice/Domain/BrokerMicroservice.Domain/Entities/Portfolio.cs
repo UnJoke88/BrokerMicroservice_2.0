@@ -22,7 +22,7 @@ namespace BrokerMicroservice.Domain.Entities
         #region Свойства
 
         ///<summary> Получить общую стоимость портфеля. </summary>
-        public Money TotalValue => GetTotalPortfolioValue();
+        public Money PortfolioTotalValue => GetTotalPortfolioValue();
 
         ///<summary> Уникальное имя или код портфеля. </summary>
         public PortfolioNumber PortfolioNumber { get; private set; }

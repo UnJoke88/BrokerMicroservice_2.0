@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BrokerMicroservice.Application.Models.Base;
+
 
 namespace BrokerMicroservice.Application.Models.Broker
 {
-    internal class CreateBrokerModel
-    {
-    }
+    public record class CreateBrokerModel(string Name) : ICreateModel;
 }

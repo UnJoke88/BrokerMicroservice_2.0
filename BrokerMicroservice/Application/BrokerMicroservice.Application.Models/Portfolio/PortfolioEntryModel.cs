@@ -14,6 +14,11 @@ namespace BrokerMicroservice.Application.Models.Portfolio
         public Guid Id { get; init; }
 
         /// <summary>
+        /// Id портфеля (PortfolioId).
+        /// </summary>
+        public Guid PortfolioId { get; init; }
+
+        /// <summary>
         /// Id актива (PortfolioEntry.AssetId).
         /// </summary>
         public Guid AssetId { get; init; }
@@ -27,7 +32,7 @@ namespace BrokerMicroservice.Application.Models.Portfolio
         /// Количество актива в портфеле (PortfolioEntry.Quantity).
         /// В DTO храним как число.
         /// </summary>
-        public decimal Quantity { get; init; }
+        public int Quantity { get; init; }
 
         /// <summary>
         /// Цена за единицу (Asset.PurchasePrice).
@@ -40,6 +45,7 @@ namespace BrokerMicroservice.Application.Models.Portfolio
         public decimal TotalValue { get; init; }
 
     }
+
     public enum AssetType
     {
         USD = 1,
