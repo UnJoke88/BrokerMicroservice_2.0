@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Domain\BrokerMicroservice.Domain\BrokerMicroservice.Domain.csproj" />
     <ProjectReference Include="..\..\Domain\BrokerMicroservice.Repositories.Abstractions\BrokerMicroservice.Repositories.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\BrokerMicroservice.Infrastructure.EntityFramework\BrokerMicroservice.Infrastructure.EntityFramework.csproj" />
     <ProjectReference Include="..\BrokerMicroservice.Application.Models\BrokerMicroservice.Application.Models.csproj" />
   </ItemGroup>
 

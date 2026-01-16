@@ -86,7 +86,6 @@ namespace BrokerMicroservice.Domain.Entities
             Status = transactionStatus;
             return true;
         }
-
         #endregion
     }
 }

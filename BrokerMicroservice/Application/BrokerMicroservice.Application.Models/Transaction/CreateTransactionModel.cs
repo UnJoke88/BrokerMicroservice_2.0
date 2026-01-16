@@ -7,6 +7,5 @@ using System.Threading.Tasks;
 
 namespace BrokerMicroservice.Application.Models.Transaction
 {
-    public record class CreateTransactionModel(Guid ClientId, DateTime Date, TransactionType Type, Guid? AssetId, int? Quantity, decimal Amount,
-        TransactionStatus Status) : ICreateModel;
+    public record class CreateTransactionModel(Guid ClientId, DateTime Date, TransactionType Type, Guid? AssetId, int? Quantity, decimal Amount) : ICreateModel;
 }

@@ -2,7 +2,11 @@
 using BrokerMicroservice.Domain.Enums;
 using BrokerMicroservice.Domain.Exceptions;
 using BrokerMicroservise.ValueObgect;
+using Microsoft.AspNetCore.Routing;
+using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
+using static System.Collections.Specialized.BitVector32;
 
 namespace BrokerMicroservice.Domain.Entities
 {
@@ -66,6 +70,23 @@ namespace BrokerMicroservice.Domain.Entities
             return true;
         }
 
+        public Asset? EditAsset(Asset asset, MinimalUnit unit, Money price)
+        {
+            if (asset == null) return null;
+            var isEdit = asset.ChangePurchasePrice(price) || asset.ChangeMinimalUnit(unit);
+
+            return isEdit ? asset : null;
+        }
+
+        public bool DeleteAsset(Asset asset)
+        {
+            if (asset == null) return false;
+            if (!_asset.Contains(asset)) return false;
+            _asset.Remove(asset);
+            return true;
+        }
+
+
         /// <summary>
         /// Получение Список всех клиентов
         /// </summary>
@@ -87,6 +108,19 @@ namespace BrokerMicroservice.Domain.Entities
             return true;
         }
 
+        /// <summary>
+        /// Удаление клиента из списка брокера (информацию о клиенте далее удаляется в сервисе)
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns></returns>
+        public bool DeleteClient(Client client)
+        {
+            if (client == null) return false;
+            if (!_client.Contains(client)) return false;
+            client.ClearTransactions();
+            _client.Remove(client);
+            return true;
+        }
 
         /// <summary>
         /// Получение Список всех активов
@@ -103,11 +137,30 @@ namespace BrokerMicroservice.Domain.Entities
         {
             if (asset == null) return false; 
             // Запрещаем добавлять актив с уже существующим типом
-    if (_asset.Any(a => a.AssetType == asset.AssetType))
-        throw new AddingAnExistingAssetException(this.Name, asset.AssetType);
+            if (_asset.Any(a => a.AssetType == asset.AssetType))
+            throw new AddingAnExistingAssetException(this.Name, asset.AssetType);
         
             _asset.Add(asset);
             return true;
+        }
+
+        /// <summary>
+        /// Создаём объект актива (оболочку)
+        /// </summary>
+        /// <param name="assetType"></param>
+        /// <param name="minimalUnit"></param>
+        /// <param name="purchasePrice"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullValueException"></exception>
+        public Asset StartAsset(AssetType assetType, MinimalUnit minimalUnit, Money purchasePrice)
+        {
+            if (minimalUnit == null) 
+                throw new ArgumentNullValueException(nameof(minimalUnit));
+            if (purchasePrice == null)
+                throw new ArgumentNullValueException(nameof(purchasePrice));
+            Asset asset = new Asset(assetType, minimalUnit, purchasePrice);
+            AddAsset(asset);
+            return asset;
         }
 
 
@@ -116,7 +169,7 @@ namespace BrokerMicroservice.Domain.Entities
         /// </summary>
         /// <param name="newName"></param>
         /// <returns></returns>
-        internal bool ChangeBrokerName(BrokerName newName)
+        public bool ChangeBrokerName(BrokerName newName)
         {
             if (Name == newName) return false;
             Name = newName;
@@ -138,6 +191,10 @@ namespace BrokerMicroservice.Domain.Entities
             return new string(chars);
         }
 
+        /// <summary>
+        /// Создание карты
+        /// </summary>
+        /// <returns></returns>
         private Card CreateCard()
         {
             // Генерируем номер карты, пока не найдём уникальный среди клиентов брокера
@@ -152,6 +209,10 @@ namespace BrokerMicroservice.Domain.Entities
             }
         }
 
+        /// <summary>
+        /// Создание портфеля
+        /// </summary>
+        /// <returns></returns>
         private Portfolio CreatePortfolio()
         {
             //Генерируем номер портфеля, пока не найдём уникальный среди клиентов брокера

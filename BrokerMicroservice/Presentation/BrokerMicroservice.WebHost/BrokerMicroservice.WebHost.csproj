@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="Requests\" />
-    <Folder Include="Responces\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 
@@ -27,6 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Application\BrokerMicroservice.Application.Models\BrokerMicroservice.Application.Models.csproj" />
+    <ProjectReference Include="..\..\Application\BrokerMicroservice.Application.Services\BrokerMicroservice.Application.Services.csproj" />
+    <ProjectReference Include="..\..\Domain\BrokerMicroservice.Domain\BrokerMicroservice.Domain.csproj" />
+    <ProjectReference Include="..\..\Domain\BrokerMicroservice.Repositories.Abstractions\BrokerMicroservice.Repositories.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Domain\BrokerMicroservise.ValueObgect\BrokerMicroservise.ValueObgect.csproj" />
     <ProjectReference Include="..\..\Infrastructure\BrokerMicroservice.Infrastructure.EntityFramework\BrokerMicroservice.Infrastructure.EntityFramework.csproj" />
   </ItemGroup>
 

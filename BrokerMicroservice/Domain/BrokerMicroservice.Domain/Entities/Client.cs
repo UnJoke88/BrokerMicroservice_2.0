@@ -89,6 +89,7 @@ namespace BrokerMicroservice.Domain.Entities
             return transaction;
         }
 
+
         /// <summary>
         /// Продажа Актива
         /// </summary>
@@ -149,7 +150,7 @@ namespace BrokerMicroservice.Domain.Entities
         /// </summary>
         /// <param name="newFirstName"></param>
         /// <returns></returns>
-        internal bool ChangeUsername(FirstName newFirstName)
+        public bool ChangeUsername(FirstName newFirstName)
         {
             if (FirstName == newFirstName) return false;
             FirstName = newFirstName;
@@ -161,7 +162,7 @@ namespace BrokerMicroservice.Domain.Entities
         /// </summary>
         /// <param name="newLastName"></param>
         /// <returns></returns>
-        internal bool ChangeLastName(LastName newLastName)
+        public bool ChangeLastName(LastName newLastName)
         {
             if (LastName == newLastName) return false;
             LastName = newLastName;
@@ -173,7 +174,7 @@ namespace BrokerMicroservice.Domain.Entities
         /// </summary>
         /// <param name="newMiddleName"></param>
         /// <returns></returns>
-        internal bool ChangeMiddleName(MiddleName newMiddleName)
+        public bool ChangeMiddleName(MiddleName? newMiddleName)
         {
             if (MiddleName == newMiddleName) return false;
             MiddleName = newMiddleName;
@@ -185,13 +186,17 @@ namespace BrokerMicroservice.Domain.Entities
         /// </summary>
         /// <param name="newEmail"></param>
         /// <returns></returns>
-        internal bool ChangeEmail(Email newEmail)
+        public bool ChangeEmail(Email newEmail)
         {
             if (Email == newEmail) return false;
             Email = newEmail;
             return true;
         }
 
+        internal void ClearTransactions()
+        { 
+            _transactions.Clear(); 
+        }
         #endregion
     }
 }

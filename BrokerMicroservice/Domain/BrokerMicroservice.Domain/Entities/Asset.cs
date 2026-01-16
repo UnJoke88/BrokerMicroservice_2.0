@@ -59,7 +59,7 @@ namespace BrokerMicroservice.Domain.Entities
         /// </summary>
         /// <param name="newMinimalUnit">Новое значение минимальной единицы.</param>
         /// <returns>True, если значение изменено; иначе — false.</returns>
-        internal bool ChangeMinimalUnit(MinimalUnit newMinimalUnit)
+        public bool ChangeMinimalUnit(MinimalUnit newMinimalUnit)
         {
             if (newMinimalUnit is null)
                 throw new ArgumentNullValueException(nameof(newMinimalUnit));
@@ -76,7 +76,7 @@ namespace BrokerMicroservice.Domain.Entities
         /// </summary>
         /// <param name="newPurchasePrice">Новое значение цены покупки.</param>
         /// <returns>True, если значение изменено; иначе — false.</returns>
-        internal bool ChangePurchasePrice(Money newPurchasePrice)
+        public bool ChangePurchasePrice(Money newPurchasePrice)
         {
             if (newPurchasePrice is null)
                 throw new ArgumentNullValueException(nameof(newPurchasePrice));

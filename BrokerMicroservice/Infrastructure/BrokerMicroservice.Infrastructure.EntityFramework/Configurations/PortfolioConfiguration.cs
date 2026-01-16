@@ -20,7 +20,7 @@ namespace BrokerMicroservice.Infrastructure.EntityFramework.Configurations
                 .IsRequired(); // связь с PortfolioEntry
 
             builder.Ignore(x => x.AssetEntries); // геттер, не нужно мапить
-            builder.Ignore(x => x.TotalValue);   // вычисляется по ходу
+            builder.Ignore(x => x.PortfolioTotalValue);   // вычисляется по ходу
         }
     }
 }

@@ -2,11 +2,7 @@
 using BrokerMicroservice.Domain.Enums;
 using BrokerMicroservice.Domain.Exceptions;
 using BrokerMicroservise.ValueObgect;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BrokerMicroservice.Domain.Entities
 {
@@ -73,7 +69,10 @@ namespace BrokerMicroservice.Domain.Entities
             else if (transaction.Type == TransactionType.Sale)
             {
                 if (entry == null || entry.Quantity < transaction.Quantity)
+                {
+                    transaction.SetTransactionStatus(TransactionStatus.Failed);
                     throw new SellingMoreAssetsThanInPortfolioException(transaction.Id, transaction.Asset.AssetType, transaction.Quantity);
+                }
 
                 entry.Quantity -= transaction.Quantity;
 

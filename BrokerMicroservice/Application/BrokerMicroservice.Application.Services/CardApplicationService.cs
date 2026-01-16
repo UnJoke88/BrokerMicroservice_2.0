@@ -4,13 +4,12 @@ using BrokerMicroservice.Application.Models.Card;
 using BrokerMicroservice.Application.Services.Abstractions;
 using BrokerMicroservice.Domain.Entities;
 using BrokerMicroservice.Repositories.Abstractions;
-using System.Threading;
+
 
 namespace BrokerMicroservice.Application.Services
 {
-    public class CardApplicationService(
-         IRepository<Card, Guid> cardRepository, IRepository<Broker, Guid> brokerRepository,IMapper mapper) 
-        : ICardApplicationService<CardModel, CreateCardModel, Guid>
+    public class CardApplicationService(IRepository<Card, Guid> cardRepository, IRepository<Broker, Guid> brokerRepository,IMapper mapper) 
+        : ICardApplicationService
     {
         //Получение модели по id
         public async Task<CardModel?> GetCardByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -23,8 +22,5 @@ namespace BrokerMicroservice.Application.Services
         public async Task<IEnumerable<CardModel>> GetCardsAsync(CancellationToken cancellationToken = default)
          => (await cardRepository.GetAllAsync(cancellationToken, true))
             .Select(mapper.Map<CardModel>);
-
-        
-
     }
 }
