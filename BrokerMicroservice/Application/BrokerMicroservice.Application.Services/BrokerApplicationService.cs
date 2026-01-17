@@ -27,19 +27,15 @@ namespace BrokerMicroservice.Application.Services
             return createdBroker is null ? null : mapper.Map<BrokerModel>(createdBroker);
         }
 
-        public async Task<bool> UpdateBrokerAsync(BrokerModel brokerInformation, CancellationToken cancellationToken = default)
+        public async Task<bool> UpdateBrokerAsync(BrokerModel brokerInformation, CancellationToken ct = default)
         {
-            var brokerById = repository.GetByIdAsync(brokerInformation.Id, cancellationToken);
-            if (brokerById.Result is null)
-                return false;
+            var broker = await repository.GetByIdAsync(brokerInformation.Id, ct);
+            if (broker is null) return false;
 
-            var broker = brokerById.Result;
+            var changed = broker.ChangeBrokerName(new BrokerName(brokerInformation.Name));
+            if (!changed) return true;
 
-            if (!broker.ChangeBrokerName(new(brokerInformation.Name)))
-                return false;
-
-            broker = mapper.Map<Broker>(brokerInformation);
-            return await repository.UpdateAsync(broker, cancellationToken);
+            return await repository.UpdateAsync(broker, ct);
         }
 
         public async Task<bool> DeleteBrokerAsync(Guid id, CancellationToken cancellationToken = default)

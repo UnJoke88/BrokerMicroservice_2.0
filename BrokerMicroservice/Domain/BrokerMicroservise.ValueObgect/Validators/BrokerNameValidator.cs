@@ -5,8 +5,8 @@ namespace BrokerMicroservise.ValueObgect.Validators
 {
     public class BrokerNameValidator : IValidator<string>
     {
-        private const int MIN_LENGTH = 3;
-        private const int MAX_LENGTH = 100;
+        public static int MIN_LENGTH = 3;
+        public static int MAX_LENGTH = 100;
 
         public void Validate(string value)
         {

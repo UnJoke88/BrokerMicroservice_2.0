@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using BrokerMicroservice.Application.Models.Client;
 using BrokerMicroservice.Application.Models.Transaction;
 using BrokerMicroservice.Application.Services.Abstractions;
 using BrokerMicroservice.Domain.Entities;
