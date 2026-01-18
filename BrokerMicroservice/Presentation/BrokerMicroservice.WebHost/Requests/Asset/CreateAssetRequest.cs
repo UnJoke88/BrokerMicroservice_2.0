@@ -2,7 +2,7 @@
 
 namespace BrokerMicroservice.WebHost.Requests.Asset
 {
-    public record class CreateAssetRequest(AssetType AssetType, int MinimalUnit, decimal PurchasePrice)
+    public record class CreateAssetRequest(AssetType AssetType, int MinimalUnit, decimal PurchasePrice, Guid BrokerId)
     {
     }
 }

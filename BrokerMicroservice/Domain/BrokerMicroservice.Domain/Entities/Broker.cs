@@ -158,7 +158,7 @@ namespace BrokerMicroservice.Domain.Entities
                 throw new ArgumentNullValueException(nameof(minimalUnit));
             if (purchasePrice == null)
                 throw new ArgumentNullValueException(nameof(purchasePrice));
-            Asset asset = new Asset(assetType, minimalUnit, purchasePrice);
+            Asset asset = new Asset(assetType, minimalUnit, purchasePrice, this);
             AddAsset(asset);
             return asset;
         }

@@ -24,8 +24,11 @@ namespace BrokerMicroservice.Application.Services.Mapping
 
             //Активы
             CreateMap<Asset, AssetModel>()
-                .ForMember(d => d.MinimalUnit, o => o.MapFrom(s => s.MinimalUnit))
+                .ForMember(d => d.MinimalUnit, o => o.MapFrom(s => s.MinimalUnit.Value))
                 .ForMember(d => d.PurchasePrice, o => o.MapFrom(s => s.PurchasePrice.Value));
+
+            CreateMap<MinimalUnit, int>().ConvertUsing(src => src.Value);
+            CreateMap<int, MinimalUnit>().ConvertUsing(src => new MinimalUnit(src));
 
             //Брокер
             CreateMap<Broker, BrokerModel>()

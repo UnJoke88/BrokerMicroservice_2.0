@@ -17,6 +17,7 @@ using BrokerMicroservice.WebHost.Responces.Card;
 using BrokerMicroservice.WebHost.Responces.Client;
 using BrokerMicroservice.WebHost.Responces.Portfolio;
 using BrokerMicroservice.WebHost.Responces.Transaction;
+using BrokerMicroservice.WebHost.Responses.Portfolio;
 
 namespace BrokerMicroservice.WebHost.Mapping
 {
@@ -53,6 +54,8 @@ namespace BrokerMicroservice.WebHost.Mapping
             CreateMap<CreatePortfolioRequest, CreatePortfolioModel>();
             CreateMap<CreatePortfolioModel, PortfolioShortResponce>();
             CreateMap<UpdatePortfolioRequest, PortfolioModel>();
+
+            CreateMap<PortfolioEntryModel, PortfolioEntryResponse>();
 
             CreateMap<TransactionModel, TransactionShortResponce>();
             CreateMap<TransactionModel, TransactionDetailedResponce>();

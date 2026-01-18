@@ -1,8 +1,16 @@
-﻿using BrokerMicroservice.Application.Models.Portfolio;
+﻿using BrokerMicroservice.WebHost.Responses.Portfolio;
 
 namespace BrokerMicroservice.WebHost.Responces.Portfolio
 {
-    public class PortfolioDetailedResponce(Guid Id, string PortfolioNumber, IEnumerable<PortfolioEntryModel> Entries, decimal PortfolioTotalValue)
+    public class PortfolioDetailedResponce
     {
+        public Guid Id { get; init; }
+
+        public string PortfolioNumber { get; init; } = null!;
+
+        public IEnumerable<PortfolioEntryResponse> Entries { get; init; }
+            = Array.Empty<PortfolioEntryResponse>(); //задаёт Entries пустой коллекцией по умолчанию, чтобы она не была null
+
+        public decimal PortfolioTotalValue { get; init; }
     }
 }

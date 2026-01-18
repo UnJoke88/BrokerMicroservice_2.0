@@ -17,7 +17,7 @@ namespace BrokerMicroservice.WebHost.Controllers
     {
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<BrokerShortResponce>))]
-        public async Task<IActionResult> GetAllAdministrators(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllBroker(CancellationToken cancellationToken)
         {
             var broker = await brokerApplicationService.GetBrokerAsync(cancellationToken);
             return Ok(mapper.Map<IEnumerable<BrokerShortResponce>>(broker));
@@ -53,7 +53,7 @@ namespace BrokerMicroservice.WebHost.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BrokerDetailedResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public async Task<IActionResult> UpdateAdministrator(UpdateBrokerRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateBroker(UpdateBrokerRequest request, CancellationToken cancellationToken)
         {
             var broker = await brokerApplicationService.GetBrokerByIdAsync(request.id, cancellationToken);
             if (broker is null)

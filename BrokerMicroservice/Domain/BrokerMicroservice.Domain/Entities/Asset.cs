@@ -27,6 +27,8 @@ namespace BrokerMicroservice.Domain.Entities
 
         public Broker Broker { get; private set; }
 
+        public Guid BrokerId { get; private set; }
+
         #endregion
 
         #region Конструктор
@@ -36,16 +38,18 @@ namespace BrokerMicroservice.Domain.Entities
 
         }
 
-        protected Asset(Guid id, AssetType assetType, MinimalUnit minimalUnit, Money purchasePrice)
+        protected Asset(Guid id, AssetType assetType, MinimalUnit minimalUnit, Money purchasePrice, Broker broker)
             : base(id)
         {
             AssetType = assetType;
             MinimalUnit = minimalUnit ?? throw new ArgumentNullValueException(nameof(minimalUnit));
             PurchasePrice = purchasePrice ?? throw new ArgumentNullValueException(nameof(purchasePrice));
+            Broker = broker ?? throw new ArgumentNullValueException(nameof(broker));
+            BrokerId = broker.Id;
         }
 
-        public Asset(AssetType assetType, MinimalUnit minimalUnit, Money purchasePrice)
-            : this(Guid.NewGuid(), assetType, minimalUnit, purchasePrice)
+        public Asset(AssetType assetType, MinimalUnit minimalUnit, Money purchasePrice,Broker broker)
+            : this(Guid.NewGuid(), assetType, minimalUnit, purchasePrice, broker)
         {
 
         }

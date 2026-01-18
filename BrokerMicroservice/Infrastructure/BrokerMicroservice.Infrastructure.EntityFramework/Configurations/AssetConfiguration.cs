@@ -21,7 +21,7 @@ namespace BrokerMicroservice.Infrastructure.EntityFramework.Configurations
                 .HasConversion(price => price.Value, value => new Money(value));
 
             //Подключаем владелеца актива Broker и этот актив содержится в списке брокера
-            builder.HasOne(x => x.Broker).WithMany("_asset");
+            builder.HasOne(x => x.Broker).WithMany("_asset").HasForeignKey(a => a.BrokerId);
 
             //Пример автозагрузки навигации (автоматически добавит a => a.Broker даже если он не указал явно)
             builder.Navigation(x => x.Broker).AutoInclude();

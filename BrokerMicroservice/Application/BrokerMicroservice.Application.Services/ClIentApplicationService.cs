@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using BrokerMicroservice.Application.Models.Broker;
 using BrokerMicroservice.Application.Models.Card;
 using BrokerMicroservice.Application.Models.Client;
 using BrokerMicroservice.Application.Models.Portfolio;
@@ -16,10 +15,9 @@ namespace BrokerMicroservice.Application.Services
 {
     public class ClientApplicationService(IRepository<Client, Guid> repository, IRepository<Broker, Guid> brokerRepository,
         IRepository<Card, Guid> cardRepository, IRepository<Portfolio, Guid> portfolioRepository,
-        IRepository<Transaction, Guid> transactionRepository, IRepository<Asset, Guid> assetRepository, IMapper mapper) : IClientApplicationService
+        IRepository<Transaction, Guid> transactionRepository, IRepository<Asset, Guid> assetRepository, IMapper mapper, ApplicationDbContext db) : IClientApplicationService //Добавляем после работы сервиса с базой напрямую (удаление списка транзакций)
+                                                                                                                                                                             //ApplicationDbContext db;
     {
-        //Добавляем после работы сервиса с базой напрямую (удаление списка транзакций)
-        private readonly ApplicationDbContext db;
 
         public async Task<IEnumerable<ClientModel>> GetClientAsync(CancellationToken cancellationToken = default)
             => (await repository.GetAllAsync(cancellationToken = default, true))
@@ -33,6 +31,14 @@ namespace BrokerMicroservice.Application.Services
 
         public async Task<ClientModel?> CreateClientAsync(CreateClientModel clientInformation, CancellationToken cancellationToken = default)
         {
+            //Проверка уникальности телефона: 1 телефон = 1 аккаунт 
+            var phoneExists = await db.Set<Client>().AnyAsync(c => c.PhoneNumber == new PhoneNumber(clientInformation.PhoneNumber), cancellationToken);
+            if (phoneExists) return null;
+
+            //Проверка уникальности email: 1 email = 1 аккаунт 
+            var emailExists = await db.Set<Client>().AnyAsync(c => c.Email == new Email(clientInformation.Email), cancellationToken);
+            if (emailExists) return null;
+
             var broker = await brokerRepository.GetByIdAsync(clientInformation.BrokerId,cancellationToken);
             if (broker == null) return null;
 
@@ -57,23 +63,39 @@ namespace BrokerMicroservice.Application.Services
 
         public async Task<bool> UpdateClientAsync(ClientModel clientInformation, CancellationToken cancellationToken = default)
         {
-            var clientById = repository.GetByIdAsync(clientInformation.Id, cancellationToken);
-            if (clientById.Result is null)
-                return false;
+            var client = await repository.GetByIdAsync(clientInformation.Id, cancellationToken);
+            if (client is null) return false;
 
-            var client = clientById.Result;
+            // email: если меняется — проверяем уникальность
+            if (client.Email.Value != clientInformation.Email)
+            {
+                var emailTaken = await db.Set<Client>()
+                    .AnyAsync(c => c.Id != client.Id && c.Email == new Email(clientInformation.Email), cancellationToken);
 
-            var okFirstName = client.ChangeUsername(new(clientInformation.FirstName));
-            var okLastName = client.ChangeLastName(new(clientInformation.LastName));
-            var okMiddleName = client.ChangeMiddleName(clientInformation.MiddleName is null ? null : new(clientInformation.MiddleName));
-            var okEmail = client.ChangeEmail(new(clientInformation.Email));
+                if (emailTaken) return false;
+            }
 
-            if (!okFirstName || !okLastName || !okMiddleName || !okEmail)
-                return false;
+            var changed = false;
 
-            client = mapper.Map<Client>(clientInformation);
+            if (client.FirstName.Value != clientInformation.FirstName)
+                changed |= client.ChangeUsername(new(clientInformation.FirstName));
+
+            if (client.LastName.Value != clientInformation.LastName)
+                changed |= client.ChangeLastName(new(clientInformation.LastName));
+
+            var middle = clientInformation.MiddleName;
+            if ((client.MiddleName?.Value) != middle)
+                changed |= client.ChangeMiddleName(middle is null ? null : new(middle));
+
+            if (client.Email.Value != clientInformation.Email)
+                changed |= client.ChangeEmail(new(clientInformation.Email));
+
+            if (!changed) return true; // ничего не меняли - успех
+
             return await repository.UpdateAsync(client, cancellationToken);
         }
+
+
 
 
         public async Task<TransactionModel?> BuyAssetAsync(CreateTransactionModel transactionInformation, CancellationToken cancellationToken = default)
@@ -127,7 +149,15 @@ namespace BrokerMicroservice.Application.Services
             var client = await repository.GetByIdAsync(transactionInformation.ClientId, cancellationToken);
             if (client is null)
                 return null;
-           
+
+            var card = await cardRepository.GetByIdAsync(client.CardId, cancellationToken);
+            if (card is null)
+                return null;
+
+            var portfolio = await portfolioRepository.GetByIdAsync(client.PortfolioId, cancellationToken);
+            if (portfolio is null)
+                return null;
+
             var transaction = client.MakeDeposit(new(transactionInformation.Amount));
             var updadedCard = await cardRepository.UpdateAsync(client.Card, cancellationToken);
             var createdTransaction = await transactionRepository.AddAsync(transaction, cancellationToken);
@@ -162,22 +192,18 @@ namespace BrokerMicroservice.Application.Services
             if (portfolio is null)
                 return false;
 
-            var broker = await brokerRepository.GetByIdAsync(client.BrokerId, cancellationToken);
-            if (broker is null)
+            var transactions = await db.Set<Transaction>().Where(t => t.Client.Id == client.Id).ToListAsync(cancellationToken);
+            if (transactions is null)
                 return false;
 
-            //Гарантированно удаляет все транзакции клиента 
-            var transactions = await db.Set<Transaction>().Where(t => t.Client.Id == client.Id).ToListAsync(cancellationToken);
             db.Set<Transaction>().RemoveRange(transactions);
+             
+            //Удаление
+            db.Remove(card);
+            db.Remove(portfolio);
+            db.Remove(client);
             await db.SaveChangesAsync(cancellationToken);
-
-            broker.DeleteClient(client);
-            var updateBroker = await brokerRepository.UpdateAsync(broker, cancellationToken);
-            var deleteCard = await cardRepository.DeleteAsync(card, cancellationToken);
-            var deletePortfolio = await portfolioRepository.DeleteAsync(portfolio, cancellationToken);
-            if (deleteCard == false) return false;
-            if (deletePortfolio == false) return false;
-            return client is null ? false : await repository.DeleteAsync(client, cancellationToken);
+            return true;
 
         }
     }

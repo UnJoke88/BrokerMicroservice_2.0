@@ -1,6 +1,7 @@
 ﻿using BrokerMicroservice.Domain.Entities.Base;
 using BrokerMicroservice.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace BrokerMicroservice.Infrastructure.EntityFramework.RepositoriesEF
 {
@@ -34,6 +35,7 @@ namespace BrokerMicroservice.Infrastructure.EntityFramework.RepositoriesEF
             ArgumentNullException.ThrowIfNull(entity, nameof(entity));
             context.Set<TEntity>().Remove(entity);
             return await context.SaveChangesAsync(cancellationToken) > 0;
+            
         }
 
         public async Task<bool> DeleteAsync(TId id, CancellationToken cancellationToken)

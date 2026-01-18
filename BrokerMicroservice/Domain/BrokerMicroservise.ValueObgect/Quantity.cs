@@ -34,12 +34,17 @@ namespace BrokerMicroservise.ValueObgect
             => q1.Value <= q2.Value;
 
         // Оператор равенства (==) для двух объектов типа Quantity
-        public static bool operator ==(Quantity q1, Quantity q2)
-            => q1.Value == q2.Value;
+        
+        public static bool operator ==(Quantity? m1, Quantity? m2)
+        {
+            if (ReferenceEquals(m1, m2)) return true;   // оба null или одна и та же ссылка
+            if (m1 is null || m2 is null) return false; // один null
+            return m1.Value == m2.Value;
+        }
 
-        // Оператор неравенства (!=) для двух объектов типа Quantity
-        public static bool operator !=(Quantity q1, Quantity q2)
-            => q1.Value != q2.Value;
+        // Оператор меньше или равно (!=) для двух объектов типа MinimalUnit
+        public static bool operator !=(Quantity? m1, Quantity? m2)
+              => !(m1 == m2);
 
         // Оператор больше (>) для int и Quantity
         public static bool operator >(Quantity q1, int q2)

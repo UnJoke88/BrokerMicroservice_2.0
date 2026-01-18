@@ -15,7 +15,6 @@ namespace BrokerMicroservice.Application.Models.Portfolio
             = Array.Empty<PortfolioEntryModel>(); //задаёт Entries пустой коллекцией по умолчанию, чтобы она не была null
 
         public decimal PortfolioTotalValue { get; init; }
-
-        
+ 
     }
 }

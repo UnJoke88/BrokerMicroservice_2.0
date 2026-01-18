@@ -9,7 +9,7 @@ using BrokerMicroservice.WebHost.Helpers;
 using BrokerMicroservice.WebHost.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-
+using System.Text.Json.Serialization;
 
 
 namespace BrokerMicroservice.WebHost
@@ -19,8 +19,13 @@ namespace BrokerMicroservice.WebHost
         public static void Main(string[] args)
         {
 
-
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddControllers()
+                .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+
+            builder.Services.AddControllers()
+                .AddJsonOptions(o =>
+                    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString(nameof(ApplicationDbContext));

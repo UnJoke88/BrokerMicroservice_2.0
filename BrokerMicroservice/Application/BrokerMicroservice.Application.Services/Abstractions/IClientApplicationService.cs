@@ -1,8 +1,7 @@
 ﻿
-
 using BrokerMicroservice.Application.Models.Client;
 using BrokerMicroservice.Application.Models.Transaction;
-using BrokerMicroservice.Domain.Entities;
+
 
 namespace BrokerMicroservice.Application.Services.Abstractions
 {

@@ -5,7 +5,7 @@ namespace BrokerMicroservise.ValueObgect.Validators
 {
     public class PortfolioNumberValidator : IValidator<string>
     {
-        public static int LENGTH => 8;
+        public static int LENGTH => 12;
 
         public void Validate(string value)
         {
