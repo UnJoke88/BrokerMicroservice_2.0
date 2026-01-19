@@ -56,13 +56,13 @@ namespace BrokerMicroservice.Application.Services.Mapping
                 .ForMember(d => d.Quantity, o => o.MapFrom(s => s.Quantity.Value))
                 .ForMember(d => d.UnitPrice, o => o.MapFrom(s => s.Asset.PurchasePrice))
                 .ForMember(d => d.TotalValue, o => o.MapFrom(s => s.Asset.PurchasePrice.Value * s.Quantity.Value));
-            
+
             //Транзакции
             CreateMap<Transaction, TransactionModel>()
-               .ForMember(d => d.Quantity, o => o.MapFrom(s => s.Quantity.Value))
-               .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount))
-               .ForMember(d => d.EndBalance, o => o.MapFrom(s => s.EndBalance));
-               
+                // если TransactionModel — positional record, маппим ctor params:
+                .ForCtorParam("Quantity", o => o.MapFrom(s => s.Quantity == null ? (int?)null : s.Quantity.Value))
+                .ForCtorParam("Amount", o => o.MapFrom(s => s.Amount));      
+
         }
     }
 }

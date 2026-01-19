@@ -1,13 +1,8 @@
 ﻿using AutoMapper;
 using BrokerMicroservice.Application.Models.Asset;
-using BrokerMicroservice.Application.Models.Client;
-using BrokerMicroservice.Application.Services;
 using BrokerMicroservice.Application.Services.Abstractions;
-using BrokerMicroservice.Domain.Entities;
 using BrokerMicroservice.WebHost.Requests.Asset;
-using BrokerMicroservice.WebHost.Requests.Client;
 using BrokerMicroservice.WebHost.Responces.Asset;
-using BrokerMicroservice.WebHost.Responces.Client;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BrokerMicroservice.WebHost.Controllers
@@ -16,7 +11,7 @@ namespace BrokerMicroservice.WebHost.Controllers
     [Route("api/Asset/[controller]")]
     public class AssetController(IAssetApplicationService assetApplicationService, IMapper mapper) : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("Вывод Всех Активов")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AssetShortResponce>))]
         public async Task<IActionResult> GetAllAsset(CancellationToken cancellationToken)
         {
@@ -37,7 +32,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return Ok(mapper.Map<AssetDetailedResponce>(asset));
         }
 
-        [HttpPost] // Запись в Базу Данных 
+        [HttpPost("Создание Актива")] 
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AssetShortResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public async Task<IActionResult> CreateAsset(CreateAssetRequest request, CancellationToken cancellationToken)
@@ -50,7 +45,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return CreatedAtAction(nameof(GetAssetById), new { assetResponce.Id }, assetResponce);
         }
 
-        [HttpPatch]// Редактирование
+        [HttpPatch("Обновление Актива")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AssetDetailedResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -70,7 +65,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return Ok(mapper.Map<AssetDetailedResponce>(updated));
         }
 
-        [HttpDelete] // Удалить экземпляр администратора
+        [HttpDelete("Удаление Актива")] 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AssetDetailedResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]

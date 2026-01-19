@@ -14,7 +14,7 @@ namespace BrokerMicroservice.WebHost.Controllers
     [Route("api/Client/[controller]")]
     public class ClientController(IClientApplicationService clientApplicationService, IMapper mapper) : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("Вывод Всех Клиентов")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClientShortResponce>))]
         public async Task<IActionResult> GetAllClient(CancellationToken cancellationToken)
         {
@@ -35,7 +35,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return Ok(mapper.Map<ClientDetailedResponce>(client));
         }
 
-        [HttpPost] // Запись в Базу Данных 
+        [HttpPost("Создание Клиента")] // Запись в Базу Данных 
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ClientShortResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public async Task<IActionResult> CreateClient(CreateClientRequest request, CancellationToken cancellationToken)
@@ -48,11 +48,11 @@ namespace BrokerMicroservice.WebHost.Controllers
             return CreatedAtAction(nameof(GetClientById), new { clientResponce.Id }, clientResponce);
         }
 
-        [HttpPatch]// Редактирование
+        [HttpPatch("Обновление Клиента")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientDetailedResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public async Task<IActionResult> UpdateClient(UpdateClientRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateClient([FromBody] UpdateClientRequest request, CancellationToken cancellationToken)
         {
             var client = await clientApplicationService.GetClientByIdAsync(request.Id, cancellationToken);
             if (client is null)
@@ -68,7 +68,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return Ok(mapper.Map<ClientDetailedResponce>(updated));
         }
 
-        [HttpDelete] // Удалить экземпляр администратора
+        [HttpDelete("Удаление Клиента")] // Удалить экземпляр администратора
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClientDetailedResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -85,55 +85,61 @@ namespace BrokerMicroservice.WebHost.Controllers
         }
 
         //Операции с картой
-        [HttpPost("buy")]
-        public async Task<IActionResult> BuyAsset([FromBody] CreateTransactionRequest request, CancellationToken ct)
+        [HttpPost("Покупка")]
+        public async Task<IActionResult> BuyAsset([FromBody] CreateTransactionRequest request,CancellationToken ct)
         {
             if (request.Type != TransactionType.Purchase)
-                return BadRequest("TransactionType должен быть Buy");
+                return BadRequest("TransactionType должен быть Purchase");
 
             var model = mapper.Map<CreateTransactionModel>(request);
             var result = await clientApplicationService.BuyAssetAsync(model, ct);
 
-            return result is null ? BadRequest("Ошибка покупки актива") : Ok(result);
+            return result is null
+                ? BadRequest("Ошибка покупки актива") : Ok(result);
         }
 
-        [HttpPost("sale")]
+        [HttpPost("Продажа")]
         public async Task<IActionResult> MakeSale([FromBody] CreateTransactionRequest request, CancellationToken ct)
         {
             if (request.Type != TransactionType.Sale)
                 return BadRequest("TransactionType должен быть Sale");
 
             var model = mapper.Map<CreateTransactionModel>(request);
+
             var result = await clientApplicationService.MakeSaleAsync(model, ct);
 
-            return result is null ? BadRequest("Ошибка продажи актива") : Ok(result);
+            return result is null
+                ? BadRequest("Ошибка продажи актива")
+                : Ok(result);
         }
 
-        [HttpPost("deposit")]
+        [HttpPost("Пополнение")]
         public async Task<IActionResult> MakeDeposit([FromBody] CreateTransactionRequest request, CancellationToken ct)
         {
             if (request.Type != TransactionType.Replenishment)
                 return BadRequest("TransactionType должен быть Deposit");
 
             var model = mapper.Map<CreateTransactionModel>(request);
+
             var result = await clientApplicationService.MakeDepositAsync(model, ct);
 
             return result is null ? BadRequest("Ошибка пополнения") : Ok(result);
         }
 
-        [HttpPost("withdraw")]
+        [HttpPost("Снятие")]
         public async Task<IActionResult> MakeWithdraw([FromBody] CreateTransactionRequest request, CancellationToken ct)
         {
+            // 1) Защита от неверного типа
             if (request.Type != TransactionType.Removing)
-                return BadRequest("TransactionType должен быть Withdraw");
+                return BadRequest("TransactionType должен быть Removing");
 
+            // 2) Маппим request -> model
             var model = mapper.Map<CreateTransactionModel>(request);
+
+            // 3) Вызываем сервис
             var result = await clientApplicationService.MakeWithdrawAsync(model, ct);
 
-            return result is null ? BadRequest("Ошибка снятия") : Ok(result);
-
-            // [HttpPost]
-            // public async Task<IActionResult> 
+            return result is null ? BadRequest("Ошибка снятия") : Ok(result); 
         }
     }
 }

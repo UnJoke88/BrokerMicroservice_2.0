@@ -11,6 +11,7 @@ using BrokerMicroservice.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
 
+
 namespace BrokerMicroservice.Application.Services
 {
     public class ClientApplicationService(IRepository<Client, Guid> repository, IRepository<Broker, Guid> brokerRepository,
@@ -98,84 +99,151 @@ namespace BrokerMicroservice.Application.Services
 
 
 
-        public async Task<TransactionModel?> BuyAssetAsync(CreateTransactionModel transactionInformation, CancellationToken cancellationToken = default)
+        public async Task<TransactionModel?> BuyAssetAsync(CreateTransactionModel transactionInformation,CancellationToken cancellationToken = default)
         {
-            var client = await repository.GetByIdAsync(transactionInformation.ClientId, cancellationToken);
+            // AssetId и Quantity для покупки обязательны
+            if (transactionInformation.AssetId is null || transactionInformation.AssetId == Guid.Empty)
+                return null;
+
+            if (transactionInformation.Quantity is null || transactionInformation.Quantity <= 0)
+                return null;
+
+            // 1) Клиент должен прийти с Card и Portfolio
+            var client = await db.Set<Client>()
+                .Include(c => c.Card)
+                .Include(c => c.Portfolio)
+                .FirstOrDefaultAsync(c => c.Id == transactionInformation.ClientId, cancellationToken);
+
             if (client is null)
                 return null;
 
-            if (transactionInformation.AssetId == null) return null;
-            var asset = await assetRepository.GetByIdAsync(transactionInformation.AssetId.Value, cancellationToken);
+            // 2) Актив
+            var asset = await db.Set<Asset>()
+                .FirstOrDefaultAsync(a => a.Id == transactionInformation.AssetId.Value, cancellationToken);
+
             if (asset is null)
                 return null;
 
-            if (transactionInformation.Quantity == null) return null;
-            var transaction = client.BuyAsset(asset,new(transactionInformation.Quantity.Value));
+            // 3) VO Quantity
+            var quantity = new Quantity(transactionInformation.Quantity.Value);
 
-            var updadedCard = await cardRepository.UpdateAsync(client.Card, cancellationToken);
-            var updadedPortfolio = await portfolioRepository.UpdateAsync(client.Portfolio, cancellationToken);
-            var createdTransaction = await transactionRepository.AddAsync(transaction, cancellationToken);
+            // 4) Доменная логика (сама меняет баланс карты и портфель)
+            var transaction = client.BuyAsset(asset, quantity);
 
-            mapper.Map<CardModel>(updadedCard);
-            mapper.Map<PortfolioModel>(updadedPortfolio);
-            return createdTransaction is null ? null : mapper.Map<TransactionModel>(createdTransaction);
+          // Если покупка не прошла — домен всё равно вернёт транзакцию со статусом Failed/Completed
+          //"если Failed — null", чтобы контроллер вернул BadRequest.
+            if (transaction.Status == BrokerMicroservice.Domain.Enums.TransactionStatus.Failed)
+                return null;
+
+            // 5) Сохраняем одним SaveChanges (клиент tracked, изменения в Card/Portfolio тоже)
+            await db.Set<Transaction>().AddAsync(transaction, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+
+            return mapper.Map<TransactionModel>(transaction);
         }
 
-        public async Task<TransactionModel?> MakeSaleAsync(CreateTransactionModel transactionInformation, CancellationToken cancellationToken = default)
+        public async Task<TransactionModel?> MakeSaleAsync(
+    CreateTransactionModel transactionInformation,
+    CancellationToken cancellationToken = default)
         {
-            var client = await repository.GetByIdAsync(transactionInformation.ClientId, cancellationToken);
+            // Для продажи assetId и quantity ОБЯЗАТЕЛЬНЫ
+            if (transactionInformation.AssetId is null || transactionInformation.AssetId == Guid.Empty)
+                return null;
+
+            if (transactionInformation.Quantity is null || transactionInformation.Quantity <= 0)
+                return null;
+
+            // 1) Грузим клиента сразу с Card и Portfolio (tracked)
+            var client = await db.Set<Client>()
+                .Include(c => c.Card)
+                .Include(c => c.Portfolio)
+                .FirstOrDefaultAsync(c => c.Id == transactionInformation.ClientId, cancellationToken);
+
             if (client is null)
                 return null;
 
-            if (transactionInformation.AssetId == null) return null;
-            var asset = await assetRepository.GetByIdAsync(transactionInformation.AssetId.Value, cancellationToken);
+            // 2) Грузим актив
+            var asset = await db.Set<Asset>()
+                .FirstOrDefaultAsync(a => a.Id == transactionInformation.AssetId.Value, cancellationToken);
+
             if (asset is null)
                 return null;
 
-            if (transactionInformation.Quantity == null) return null;
-            var transaction = client.MakeSale(asset, new(transactionInformation.Quantity.Value));
+            // 3)грузим PortfolioEntry по этому портфелю и активу,
+            // чтобы EF relationship fix-up заполнил коллекцию в Portfolio (даже если она private/backing field)
+            await db.Set<PortfolioEntry>()
+                .Where(e => e.PortfolioId == client.PortfolioId && e.AssetId == asset.Id)
+                .ToListAsync(cancellationToken);
 
-            var updadedCard = await cardRepository.UpdateAsync(client.Card, cancellationToken);
-            var updadedPortfolio = await portfolioRepository.UpdateAsync(client.Portfolio, cancellationToken);
-            var createdTransaction = await transactionRepository.AddAsync(transaction, cancellationToken);
+            // 4) VO Quantity
+            var quantity = new Quantity(transactionInformation.Quantity.Value);
 
-            mapper.Map<CardModel>(updadedCard);
-            mapper.Map<PortfolioModel>(updadedPortfolio);
-            return createdTransaction is null ? null : mapper.Map<TransactionModel>(createdTransaction);
+            Transaction transaction;
+            try
+            {
+                transaction = client.MakeSale(asset, quantity);
+            }
+            catch
+            {
+                // домен сказал "нельзя продать" (в т.ч. SellingMoreAssetsThanInPortfolioException)
+                return null;
+            }
+
+            // Если у тебя домен всегда возвращает Transaction, но ставит статус Failed — можно так:
+            if (transaction.Status == BrokerMicroservice.Domain.Enums.TransactionStatus.Failed)
+                return null;
+
+            // 5) Сохраняем одним коммитом: и транзакцию, и изменения в Card/Portfolio (они tracked)
+            await db.Set<Transaction>().AddAsync(transaction, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+
+            return mapper.Map<TransactionModel>(transaction);
         }
 
         public async Task<TransactionModel?> MakeDepositAsync(CreateTransactionModel transactionInformation, CancellationToken cancellationToken = default)
         {
-            var client = await repository.GetByIdAsync(transactionInformation.ClientId, cancellationToken);
+            // 1) Берём клиента сразу с Card (и Portfolio можно оставить, но для депозита не обязательно)
+            var client = await db.Set<Client>()
+                .Include(c => c.Card)
+                .FirstOrDefaultAsync(c => c.Id == transactionInformation.ClientId, cancellationToken);
+
             if (client is null)
                 return null;
 
-            var card = await cardRepository.GetByIdAsync(client.CardId, cancellationToken);
-            if (card is null)
+            // 2) Доменная логика (внутри поменяет баланс Card)
+            var transaction = client.MakeDeposit(new Money(transactionInformation.Amount));
+            if (transaction is null)
                 return null;
 
-            var portfolio = await portfolioRepository.GetByIdAsync(client.PortfolioId, cancellationToken);
-            if (portfolio is null)
-                return null;
+            // 3) Сохраняем транзакцию + изменённый баланс одним коммитом
+            await db.Set<Transaction>().AddAsync(transaction, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
 
-            var transaction = client.MakeDeposit(new(transactionInformation.Amount));
-            var updadedCard = await cardRepository.UpdateAsync(client.Card, cancellationToken);
-            var createdTransaction = await transactionRepository.AddAsync(transaction, cancellationToken);
-            mapper.Map<CardModel>(updadedCard);
-            return createdTransaction is null ? null : mapper.Map<TransactionModel>(createdTransaction);
+            // 4) Возвращаем DTO
+            return mapper.Map<TransactionModel>(transaction);
         }
 
-        public async Task<TransactionModel?> MakeWithdrawAsync(CreateTransactionModel transactionInformation, CancellationToken cancellationToken = default)
+        public async Task<TransactionModel?> MakeWithdrawAsync(CreateTransactionModel transactionInformation,CancellationToken cancellationToken = default)
         {
-            var client = await repository.GetByIdAsync(transactionInformation.ClientId, cancellationToken);
+            // 1) Грузим клиента сразу с Card !!!
+            var client = await db.Set<Client>()
+                .Include(c => c.Card)
+                .FirstOrDefaultAsync(c => c.Id == transactionInformation.ClientId, cancellationToken);
+
             if (client is null)
                 return null;
 
-            var transaction = client.MakeWithdraw(new(transactionInformation.Amount));
-            var updadedCard = await cardRepository.UpdateAsync(client.Card, cancellationToken);
-            var createdTransaction = await transactionRepository.AddAsync(transaction, cancellationToken);
-            mapper.Map<CardModel>(updadedCard);
-            return createdTransaction is null ? null : mapper.Map<TransactionModel>(createdTransaction);
+            // 2) Доменная логика: снимаем с карты и создаём транзакцию
+            var transaction = client.MakeWithdraw(new Money(transactionInformation.Amount));
+            if (transaction is null)
+                return null;
+
+            // 3) Сохраняем: транзакция + изменения в Card (она в Include)
+            await db.Set<Transaction>().AddAsync(transaction, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+
+            // 4) Возвращаем DTO
+            return mapper.Map<TransactionModel>(transaction);
         }
 
         public async Task<bool> DeleteClientAsync(Guid id, CancellationToken cancellationToken = default)

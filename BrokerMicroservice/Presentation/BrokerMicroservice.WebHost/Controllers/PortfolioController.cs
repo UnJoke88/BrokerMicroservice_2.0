@@ -9,7 +9,7 @@ namespace BrokerMicroservice.WebHost.Controllers
     [Route("api/Portfolio/[controller]")]
     public class PortfolioController(IPortfolioApplicationService portfolioApplicationService, IMapper mapper) : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("Вывод Всех Портфелей")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<PortfolioShortResponce>))]
         public async Task<IActionResult> GetAllPortfolio(CancellationToken cancellationToken)
         {

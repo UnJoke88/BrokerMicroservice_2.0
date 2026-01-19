@@ -9,7 +9,7 @@ namespace BrokerMicroservice.WebHost.Controllers
     [Route("api/Card/[controller]")]
     public class CardController(ICardApplicationService cardApplicationService, IMapper mapper) : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("Вывод Всех Карт")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CardShortResponce>))]
         public async Task<IActionResult> GetAllCard(CancellationToken cancellationToken)
         {

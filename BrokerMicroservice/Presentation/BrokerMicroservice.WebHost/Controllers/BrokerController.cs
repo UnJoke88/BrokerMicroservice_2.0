@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 using BrokerMicroservice.Application.Models.Broker;
-using BrokerMicroservice.Application.Services;
 using BrokerMicroservice.Application.Services.Abstractions;
-using BrokerMicroservice.Application.Services.Abstractions.Base;
-using BrokerMicroservice.Domain.Entities;
 using BrokerMicroservice.WebHost.Requests.Broker;
 using BrokerMicroservice.WebHost.Responces.Broker;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +12,7 @@ namespace BrokerMicroservice.WebHost.Controllers
     [Route("api/Broker/[controller]")]
     public class BrokerController(IBrokerApplicationService brokerApplicationService, IMapper mapper) : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("Вывод Всех Брокеров")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<BrokerShortResponce>))]
         public async Task<IActionResult> GetAllBroker(CancellationToken cancellationToken)
         {
@@ -36,7 +33,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return Ok(mapper.Map<BrokerDetailedResponce>(broker));
         }
 
-        [HttpPost] // Запись в Базу Данных 
+        [HttpPost("Создание Брокера")] 
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BrokerShortResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         public async Task<IActionResult> CreateBroker(CreateBrokerRequest request, CancellationToken cancellationToken)
@@ -49,7 +46,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return CreatedAtAction(nameof(GetBrokerById), new { brokerResponce.Id }, brokerResponce);
         }
 
-        [HttpPatch]// Редактирование
+        [HttpPatch("Обновление Брокера")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BrokerDetailedResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -69,7 +66,7 @@ namespace BrokerMicroservice.WebHost.Controllers
             return Ok(mapper.Map<BrokerDetailedResponce>(updated));
         }
 
-        [HttpDelete] // Удалить экземпляр администратора
+        [HttpDelete("Удаление Брокера")] // Удалить экземпляр администратора
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BrokerDetailedResponce))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
